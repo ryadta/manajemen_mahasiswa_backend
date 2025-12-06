@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Integration Test - Manajemen Mahasiswa (Basic Auth)</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        
+        .test-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+        
+        .test-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+        }
+        
+        .test-body {
+            padding: 1.5rem;
+        }
+        
+        .test-result {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .test-success {
+            border-left: 4px solid #28a745;
+            background-color: #d4edda;
+        }
+        
+        .test-error {
+            border-left: 4px solid #dc3545;
+            background-color: #f8d7da;
+        }
+        
+        .test-info {
+            border-left: 4px solid #17a2b8;
+            background-color: #d1ecf1;
+        }
+        
+        .btn-test {
+            margin: 0.25rem;
+        }
+        
+        .status-badge {
+            font-size: 0.8rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+        }
+        
+        .endpoint-info {
+            background: #e9ecef;
+            border-radius: 5px;
+            padding: 0.5rem;
+            margin: 0.5rem 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <!-- Header -->
+        <div class="test-card">
+            <div class="test-header text-center">
+                <h1><i class="fas fa-vial me-2"></i>API Integration Test Suite</h1>
+                <p class="mb-0">Comprehensive testing for Manajemen Mahasiswa API</p>
+                <small class="text-light"><i class="fas fa-shield-alt me-1"></i>Basic Authentication Testing</small>
+            </div>
+        </div>
+
+        <!-- Test Status Overview -->
+        <div class="test-card">
+            <div class="test-body">
+                <h5><i class="fas fa-chart-pie me-2"></i>Test Status Overview</h5>
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <div class="p-3">
+                            <h3 id="total-tests" class="text-primary">0</h3>
+                            <small>Total Tests</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="p-3">
+                            <h3 id="passed-tests" class="text-success">0</h3>
+                            <small>Passed</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="p-3">
+                            <h3 id="failed-tests" class="text-danger">0</h3>
+                            <small>Failed</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="p-3">
+                            <h3 id="success-rate" class="text-info">0%</h3>
+                            <small>Success Rate</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-3">
+                    <button class="btn btn-primary btn-lg" onclick="runAllTests()">
+                        <i class="fas fa-play me-2"></i>Run All Tests
+                    </button>
+                    <button class="btn btn-secondary ms-2" onclick="clearResults()">
+                        <i class="fas fa-trash me-2"></i>Clear Results
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Authentication Tests -->
+        <div class="test-card">
+            <div class="test-header">
+                <h5><i class="fas fa-key me-2"></i>Basic Authentication Tests</h5>
+            </div>
+            <div class="test-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <button class="btn btn-outline-primary btn-test w-100" onclick="testConnection()">
+                            <i class="fas fa-plug me-2"></i>Test Connection
+                        </button>
+                        <div class="endpoint-info">GET /api/health</div>
+                    </div>
+                    <div class="col-md-6">
+                        <button class="btn btn-outline-primary btn-test w-100" onclick="testLogin()">
+                            <i class="fas fa-sign-in-alt me-2"></i>Test Login
+                        </button>
+                        <div class="endpoint-info">Basic Auth Login</div>
+                    </div>
+                </div>
+                <div class="row mt-2">
+                    <div class="col-md-6">
+                        <button class="btn btn-outline-primary btn-test w-100" onclick="testGetUser()">
+                            <i class="fas fa-user me-2"></i>Test Get User
+                        </button>
+                        <div class="endpoint-info">GET /api/user</div>
+                    </div>
+                    <div class="col-md-6">
+                        <button class="btn btn-outline-primary btn-test w-100" onclick="testLogout()">
+                            <i class="fas fa-sign-out-alt me-2"></i>Test Logout
+                        </button>
+                        <div class="endpoint-info">POST /api/logout</div>
+                    </div>
+                </div>
+                <div id="auth-results" class="test-result" style="display: none;"></div>
+            </div>
+        </div>
+
+        <!-- Mahasiswa CRUD Tests -->
+        <div class="test-card">
+            <div class="test-header">
+                <h5><i class="fas fa-users me-2"></i>Mahasiswa CRUD Tests</h5>
+            </div>
+            <div class="test-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <button class="btn btn-outline-success btn-test w-100" onclick="testGetAllMahasiswa()">
+                            <i class="fas fa-list me-2"></i>Get All Mahasiswa
+                        </button>
+                        <div class="endpoint-info">GET /api/mahasiswa</div>
+                    </div>
+                    <div class="col-md-6">
+                        <button class="btn btn-outline-success btn-test w-100" onclick="testGetMahasiswaByNim()">
+                            <i class="fas fa-search me-2"></i>Get by NIM
+                        </button>
+                        <div class="endpoint-info">GET /api/mahasiswa/{nim}</div>
+                    </div>
+                </div>
+                <div class="row mt-2">
+                    <div class="col-md-6">
+                        <button class="btn btn-outline-warning btn-test w-100" onclick="testCreateMahasiswa()">
+                            <i class="fas fa-plus me-2"></i>Create Mahasiswa
+                        </button>
+                        <div class="endpoint-info">POST /api/mahasiswa</div>
+                    </div>
+                    <div class="col-md-6">
+                        <button class="btn btn-outline-info btn-test w-100" onclick="testUpdateMahasiswa()">
+                            <i class="fas fa-edit me-2"></i>Update Mahasiswa
+                        </button>
+                        <div class="endpoint-info">PUT /api/mahasiswa/{nim}</div>
+                    </div>
+                </div>
+                <div class="row mt-2">
+                    <div class="col-md-6">
+                        <button class="btn btn-outline-danger btn-test w-100" onclick="testDeleteMahasiswa()">
+                            <i class="fas fa-trash me-2"></i>Delete Mahasiswa
+                        </button>
+                        <div class="endpoint-info">DELETE /api/mahasiswa/{nim}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <button class="btn btn-outline-secondary btn-test w-100" onclick="testValidation()">
+                            <i class="fas fa-check me-2"></i>Test Validation
+                        </button>
+                        <div class="endpoint-info">Validation Rules</div>
+                    </div>
+                </div>
+                <div id="mahasiswa-results" class="test-result" style="display: none;"></div>
+            </div>
+        </div>
+
+        <!-- User Management Tests -->
+        <div class="test-card">
+            <div class="test-header">
+                <h5><i class="fas fa-users-cog me-2"></i>User Management Tests (Admin Only)</h5>
+            </div>
+            <div class="test-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <button class="btn btn-outline-info btn-test w-100" onclick="testGetAllUsers()">
+                            <i class="fas fa-list me-2"></i>Get All Users
+                        </button>
+                        <div class="endpoint-info">GET /api/users</div>
+                    </div>
+                    <div class="col-md-6">
+                        <button class="btn btn-outline-success btn-test w-100" onclick="testCreateMahasiswaAccount()">
+                            <i class="fas fa-user-plus me-2"></i>Create Mahasiswa Account
+                        </button>
+                        <div class="endpoint-info">POST /api/users/mahasiswa</div>
+                    </div>
+                </div>
+                <div id="user-mgmt-results" class="test-result" style="display: none;"></div>
+            </div>
+        </div>
+
+        <!-- Role-Based Access Tests -->
+        <div class="test-card">
+            <div class="test-header">
+                <h5><i class="fas fa-shield-alt me-2"></i>Role-Based Access Control Tests</h5>
+            </div>
+            <div class="test-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <button class="btn btn-outline-warning btn-test w-100" onclick="testAdminAccess()">
+                            <i class="fas fa-crown me-2"></i>Test Admin Access
+                        </button>
+                        <div class="endpoint-info">Admin Role Tests</div>
+                    </div>
+                    <div class="col-md-6">
+                        <button class="btn btn-outline-info btn-test w-100" onclick="testMahasiswaAccess()">
+                            <i class="fas fa-user-graduate me-2"></i>Test Mahasiswa Access
+                        </button>
+                        <div class="endpoint-info">Mahasiswa Role Tests</div>
+                    </div>
+                </div>
+                <div id="rbac-results" class="test-result" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/api-client.js"></script>
+    <script>
+        class APITester {
+            constructor() {
+                this.testResults = {
+                    total: 0,
+                    passed: 0,
+                    failed: 0
+                };
+                this.testNim = '99999999'; // Test NIM for CRUD operations
+            }
+            
+            updateStats() {
+                document.getElementById('total-tests').textContent = this.testResults.total;
+                document.getElementById('passed-tests').textContent = this.testResults.passed;
+                document.getElementById('failed-tests').textContent = this.testResults.failed;
+                
+                const successRate = this.testResults.total > 0 
+                    ? Math.round((this.testResults.passed / this.testResults.total) * 100)
+                    : 0;
+                document.getElementById('success-rate').textContent = successRate + '%';
+            }
+            
+            logResult(container, testName, success, message, data = null) {
+                this.testResults.total++;
+                if (success) {
+                    this.testResults.passed++;
+                } else {
+                    this.testResults.failed++;
+                }
+                
+                const resultDiv = document.getElementById(container);
+                resultDiv.style.display = 'block';
+                
+                const timestamp = new Date().toLocaleTimeString();
+                const statusClass = success ? 'test-success' : 'test-error';
+                const icon = success ? 'fa-check-circle' : 'fa-times-circle';
+                const statusText = success ? 'PASS' : 'FAIL';
+                
+                const logEntry = document.createElement('div');
+                logEntry.className = `mb-2 p-2 ${statusClass}`;
+                logEntry.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <i class="fas ${icon} me-2"></i>
+                            <strong>[${timestamp}] ${testName}</strong>
+                            <span class="status-badge bg-${success ? 'success' : 'danger'} text-white ms-2">${statusText}</span>
+                        </div>
+                    </div>
+                    <div class="mt-1">${message}</div>
+                    ${data ? `<pre class="mt-2 mb-0" style="font-size: 0.8rem;">${JSON.stringify(data, null, 2)}</pre>` : ''}
+                `;
+                
+                resultDiv.appendChild(logEntry);
+                resultDiv.scrollTop = resultDiv.scrollHeight;
+                
+                this.updateStats();
+            }
+            
+            async runTest(testName, testFunction, container) {
+                try {
+                    const result = await testFunction();
+                    this.logResult(container, testName, true, result.message || 'Test passed', result.data);
+                } catch (error) {
+                    this.logResult(container, testName, false, error.message, null);
+                }
+            }
+            
+            // Authentication Tests
+            async testConnection() {
+                return await this.runTest('Connection Test', async () => {
+                    const result = await apiClient.testConnection();
+                    if (result.success) {
+                        return { message: 'API connection successful', data: result.data };
+                    }
+                    throw new Error('Connection failed');
+                }, 'auth-results');
+            }
+
+            async testLogin() {
+                return await this.runTest('Basic Auth Login Test', async () => {
+                    const result = await apiClient.login('admin@example.com', 'password123');
+                    if (result.success) {
+                        return { message: 'Basic Auth login successful', data: result };
+                    }
+                    throw new Error('Login failed');
+                }, 'auth-results');
+            }
+            
+            async testRegister() {
+                return await this.runTest('Register Test (Not Supported)', async () => {
+                    try {
+                        await apiClient.register('Test User', 'test@example.com', 'password123', 'password123');
+                        throw new Error('Registration should not be supported');
+                    } catch (error) {
+                        if (error.message.includes('not supported')) {
+                            return { message: 'Registration correctly disabled for Basic Auth' };
+                        }
+                        throw error;
+                    }
+                }, 'auth-results');
+            }
+            
+            async testGetUser() {
+                return await this.runTest('Get User Test', async () => {
+                    const user = await apiClient.getCurrentUser();
+                    return { message: 'User data retrieved successfully', data: user };
+                }, 'auth-results');
+            }
+            
+            async testLogout() {
+                return await this.runTest('Logout Test', async () => {
+                    await apiClient.logout();
+                    return { message: 'Logout successful' };
+                }, 'auth-results');
+            }
+            
+            // Mahasiswa CRUD Tests
+            async testGetAllMahasiswa() {
+                return await this.runTest('Get All Mahasiswa', async () => {
+                    const result = await apiClient.getAllMahasiswa();
+                    if (result.success) {
+                        return { message: `Retrieved ${result.data.length} mahasiswa records`, data: result.data };
+                    }
+                    throw new Error('Failed to get mahasiswa data');
+                }, 'mahasiswa-results');
+            }
+            
+            async testGetMahasiswaByNim() {
+                return await this.runTest('Get Mahasiswa by NIM', async () => {
+                    // First get all mahasiswa to find a valid NIM
+                    const allResult = await apiClient.getAllMahasiswa();
+                    if (allResult.success && allResult.data.length > 0) {
+                        const nim = allResult.data[0].nim;
+                        const result = await apiClient.getMahasiswaByNim(nim);
+                        if (result.success) {
+                            return { message: `Retrieved mahasiswa with NIM ${nim}`, data: result.data };
+                        }
+                    }
+                    throw new Error('No mahasiswa found or failed to retrieve');
+                }, 'mahasiswa-results');
+            }
+            
+            async testCreateMahasiswa() {
+                return await this.runTest('Create Mahasiswa', async () => {
+                    const testData = {
+                        nim: this.testNim,
+                        nama: 'Test Mahasiswa API',
+                        jurusan: 'Teknik Informatika',
+                        angkatan: 2024,
+                        no_hp: '081234567890',
+                        alamat: 'Jl. Test API No. 123'
+                    };
+                    
+                    const result = await apiClient.createMahasiswa(testData);
+                    if (result.success) {
+                        return { message: 'Mahasiswa created successfully', data: result.data };
+                    }
+                    throw new Error('Failed to create mahasiswa');
+                }, 'mahasiswa-results');
+            }
+            
+            async testUpdateMahasiswa() {
+                return await this.runTest('Update Mahasiswa', async () => {
+                    const updateData = {
+                        nama: 'Test Mahasiswa API Updated',
+                        jurusan: 'Sistem Informasi',
+                        alamat: 'Jl. Test API Updated No. 456'
+                    };
+                    
+                    const result = await apiClient.updateMahasiswa(this.testNim, updateData);
+                    if (result.success) {
+                        return { message: 'Mahasiswa updated successfully', data: result.data };
+                    }
+                    throw new Error('Failed to update mahasiswa');
+                }, 'mahasiswa-results');
+            }
+            
+            async testDeleteMahasiswa() {
+                return await this.runTest('Delete Mahasiswa', async () => {
+                    const result = await apiClient.deleteMahasiswa(this.testNim);
+                    if (result.success) {
+                        return { message: 'Mahasiswa deleted successfully' };
+                    }
+                    throw new Error('Failed to delete mahasiswa');
+                }, 'mahasiswa-results');
+            }
+            
+            async testValidation() {
+                return await this.runTest('Validation Test', async () => {
+                    const invalidData = {
+                        nim: '123', // Too short
+                        nama: '', // Empty
+                        jurusan: '',
+                        angkatan: 1999, // Too old
+                        no_hp: '123', // Invalid format
+                        alamat: ''
+                    };
+                    
+                    const validation = apiClient.validateMahasiswaData(invalidData);
+                    if (!validation.isValid && validation.errors.length > 0) {
+                        return { message: 'Validation working correctly', data: validation.errors };
+                    }
+                    throw new Error('Validation not working properly');
+                }, 'mahasiswa-results');
+            }
+            
+            // User Management Tests
+            async testGetAllUsers() {
+                return await this.runTest('Get All Users', async () => {
+                    const result = await apiClient.getAllUsers();
+                    if (result.success) {
+                        return { message: `Retrieved ${result.data.length} users`, data: result.data };
+                    }
+                    throw new Error('Failed to get users data');
+                }, 'user-mgmt-results');
+            }
+            
+            async testCreateMahasiswaAccount() {
+                return await this.runTest('Create Mahasiswa Account', async () => {
+                    const userData = {
+                        name: 'Test Mahasiswa Account',
+                        email: `mahasiswa${Date.now()}@example.com`,
+                        password: 'password123',
+                        password_confirmation: 'password123'
+                    };
+                    
+                    const result = await apiClient.createMahasiswaAccount(userData);
+                    if (result.success) {
+                        return { message: 'Mahasiswa account created successfully', data: result.data };
+                    }
+                    throw new Error('Failed to create mahasiswa account');
+                }, 'user-mgmt-results');
+            }
+            
+            // RBAC Tests
+            async testAdminAccess() {
+                return await this.runTest('Admin Access Test', async () => {
+                    if (!apiClient.isAdmin()) {
+                        throw new Error('Current user is not admin - login as admin first');
+                    }
+                    
+                    // Test admin-only operations
+                    const tests = [];
+                    
+                    try {
+                        await apiClient.getAllUsers();
+                        tests.push('✓ Can access user management');
+                    } catch (e) {
+                        tests.push('✗ Cannot access user management');
+                    }
+                    
+                    return { message: 'Admin access test completed', data: tests };
+                }, 'rbac-results');
+            }
+            
+            async testMahasiswaAccess() {
+                return await this.runTest('Mahasiswa Access Test', async () => {
+                    // Login as mahasiswa first
+                    await apiClient.login('user@example.com', 'password123');
+                    
+                    if (!apiClient.isMahasiswa()) {
+                        throw new Error('Failed to login as mahasiswa');
+                    }
+                    
+                    const tests = [];
+                    
+                    // Test read access
+                    try {
+                        await apiClient.getAllMahasiswa();
+                        tests.push('✓ Can read mahasiswa data');
+                    } catch (e) {
+                        tests.push('✗ Cannot read mahasiswa data');
+                    }
+                    
+                    // Test write access (should fail)
+                    try {
+                        await apiClient.createMahasiswa({
+                            nim: '88888888',
+                            nama: 'Test',
+                            jurusan: 'Test',
+                            angkatan: 2024,
+                            no_hp: '081234567890',
+                            alamat: 'Test'
+                        });
+                        tests.push('✗ Can create mahasiswa (should not be allowed)');
+                    } catch (e) {
+                        tests.push('✓ Cannot create mahasiswa (correct behavior)');
+                    }
+                    
+                    return { message: 'Mahasiswa access test completed', data: tests };
+                }, 'rbac-results');
+            }
+            
+            async runAllTests() {
+                this.clearResults();
+                
+                // Ensure we're logged in as admin for most tests
+                try {
+                    await apiClient.login('admin@example.com', 'password123');
+                } catch (e) {
+                    console.warn('Could not login as admin:', e.message);
+                }
+                
+                // Run all tests
+                await this.testConnection();
+                await this.testLogin();
+                await this.testGetUser();
+                await this.testGetAllMahasiswa();
+                await this.testGetMahasiswaByNim();
+                await this.testValidation();
+                
+                if (apiClient.isAdmin()) {
+                    await this.testCreateMahasiswa();
+                    await this.testUpdateMahasiswa();
+                    await this.testDeleteMahasiswa();
+                    await this.testGetAllUsers();
+                    await this.testCreateMahasiswaAccount();
+                    await this.testAdminAccess();
+                }
+                
+                await this.testMahasiswaAccess();
+                await this.testRegister();
+                await this.testLogout();
+            }
+            
+            clearResults() {
+                const containers = ['auth-results', 'mahasiswa-results', 'user-mgmt-results', 'rbac-results'];
+                containers.forEach(id => {
+                    const element = document.getElementById(id);
+                    element.innerHTML = '';
+                    element.style.display = 'none';
+                });
+                
+                this.testResults = { total: 0, passed: 0, failed: 0 };
+                this.updateStats();
+            }
+        }
+        
+        // Initialize tester
+        const tester = new APITester();
+        
+        // Global functions for buttons
+        function runAllTests() { tester.runAllTests(); }
+        function clearResults() { tester.clearResults(); }
+        
+        // Authentication tests
+        function testConnection() { tester.testConnection(); }
+        function testLogin() { tester.testLogin(); }
+        function testRegister() { tester.testRegister(); }
+        function testGetUser() { tester.testGetUser(); }
+        function testLogout() { tester.testLogout(); }
+        
+        // Mahasiswa CRUD tests
+        function testGetAllMahasiswa() { tester.testGetAllMahasiswa(); }
+        function testGetMahasiswaByNim() { tester.testGetMahasiswaByNim(); }
+        function testCreateMahasiswa() { tester.testCreateMahasiswa(); }
+        function testUpdateMahasiswa() { tester.testUpdateMahasiswa(); }
+        function testDeleteMahasiswa() { tester.testDeleteMahasiswa(); }
+        function testValidation() { tester.testValidation(); }
+        
+        // User management tests
+        function testGetAllUsers() { tester.testGetAllUsers(); }
+        function testCreateMahasiswaAccount() { tester.testCreateMahasiswaAccount(); }
+        
+        // RBAC tests
+        function testAdminAccess() { tester.testAdminAccess(); }
+        function testMahasiswaAccess() { tester.testMahasiswaAccess(); }
+        
+        console.log('✅ API Tester loaded successfully');
+    </script>
+</body>
+</html>
